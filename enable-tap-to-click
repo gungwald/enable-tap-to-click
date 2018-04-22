@@ -9,57 +9,53 @@ sub getPropertyId($$);
 sub setIntProperty($$$);
 
 my $devId = getDeviceId("touch");
-if (defined($devId)) {
-    my $propId = getPropertyId($devId, "tapping enabled");
-    if (defined($propId)) {
-        setIntProperty($devId, $propId, 1);
-    }
+if ( defined($devId) ) {
+	my $propId = getPropertyId( $devId, "tapping enabled" );
+	if ( defined($propId) ) {
+		setIntProperty( $devId, $propId, 1 );
+	}
 }
 
-sub getDeviceId($)
-{
+sub getDeviceId($) {
 	my ($searchTerm) = @_;
 	my $device_id;
 
-	open(XINPUT, "xinput | ") || die "$0: $!\n";
+	open( XINPUT, "xinput | " ) || die "$0: $!\n";
 	while (<XINPUT>) {
 		if (/$searchTerm/i) {
 			($device_id) = /id=(\d+)/;
 			print "Found device id=$device_id\n";
-			break;
+			last;
 		}
 	}
 	close(XINPUT);
-    if (! defined($device_id)) {
-        print STDERR "Device id not found for '$searchTerm'\n";
-    }
+	if ( !defined($device_id) ) {
+		print STDERR "Device id not found for '$searchTerm'\n";
+	}
 	return $device_id;
 }
 
-sub getPropertyId($$)
-{
-	my ($deviceId, $propertySearchTerm) = @_;
+sub getPropertyId($$) {
+	my ( $deviceId, $propertySearchTerm ) = @_;
 
-	open(XINPUT, "xinput list-props $deviceId | ") || die "$0: $!\n";
+	open( XINPUT, "xinput list-props $deviceId | " ) || die "$0: $!\n";
 	while (<XINPUT>) {
 		if (/$propertySearchTerm/i) {
 			($propertyId) = /\s\((\d+)\):\s/;
 			print "Found property id=", $propertyId, "\n";
-			break;
+			last;
 		}
 	}
 	close(XINPUT);
-    if (! defined($propertyId)) {
-        print STDERR "Property not found for '$propertySearchTerm'\n";
-    }
-    return $propertyId;
+	if ( !defined($propertyId) ) {
+		print STDERR "Property not found for '$propertySearchTerm'\n";
+	}
+	return $propertyId;
 }
 
-sub setIntProperty($$$)
-{
-	my ($deviceId, $propertyId, $value) = @_;
-
-	my @args = ("xinput", "set-int-prop", $deviceId, $propertyId, $value);
-        system(@args) == 0 or die "Command " . join(" ", @args) . " failed: $?\n";
+sub setIntProperty($$$) {
+	my ( $deviceId, $propertyId, $value ) = @_;
+	my @args = ( "xinput", "set-int-prop", $deviceId, $propertyId, $value );
+	system(@args) == 0 or die "Command " . join( " ", @args ) . " failed: $?\n";
 	print "Set property=", $value, "\n";
 }
